@@ -1,27 +1,32 @@
+import { vi, describe, it, expect, beforeEach, type MockInstance } from 'vitest'
 import * as exec from '@actions/exec'
-import { Default, Inputs } from '../src/inputs'
-import * as path from '../src/path'
-import * as powershell from '../src/powershell'
-import * as sut from '../src/vstest'
-import * as find from '../src/find'
+import { Default, Inputs } from '../src/inputs.js'
+import * as path from '../src/path.js'
+import * as powershell from '../src/powershell.js'
+import * as sut from '../src/vstest.js'
+import * as find from '../src/find.js'
+
+vi.mock('@actions/exec', () => ({
+  exec: vi.fn().mockResolvedValue(undefined)
+}))
 
 const SolutionFolder = path.join(__dirname, './__solution__')
 
-let execMock: jest.SpiedFunction<typeof exec.exec>
-let expandArchiveMock: jest.SpiedFunction<typeof powershell.expandArchive>
-let findMock: jest.SpiedFunction<typeof find.find>
-let invokeWebRequestMock: jest.SpiedFunction<typeof powershell.invokeWebRequest>
+let execMock: MockInstance<typeof exec.exec>
+let expandArchiveMock: MockInstance<typeof powershell.expandArchive>
+let findMock: MockInstance<typeof find.find>
+let invokeWebRequestMock: MockInstance<typeof powershell.invokeWebRequest>
 
 describe('downloadTestTools()', () => {
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
 
-    expandArchiveMock = jest
+    expandArchiveMock = vi
       .spyOn(powershell, 'expandArchive')
-      .mockImplementation()
-    invokeWebRequestMock = jest
+      .mockImplementation(async () => {})
+    invokeWebRequestMock = vi
       .spyOn(powershell, 'invokeWebRequest')
-      .mockImplementation()
+      .mockImplementation(async () => {})
   })
 
   it('returns path to vstest.console.exe', async () => {
@@ -170,9 +175,13 @@ describe('getTestAssemblies()', () => {
 
 describe('getVsTestPath()', () => {
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
 
-    findMock = jest.spyOn(find, 'find').mockImplementation()
+    findMock = vi.spyOn(find, 'find').mockImplementation(async () => ({
+      directories: [],
+      files: [],
+      searchPaths: []
+    }))
   })
 
   it('finds returns empty string', async () => {
@@ -206,9 +215,9 @@ describe('getVsTestPath()', () => {
 
 describe('runTests()', () => {
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
 
-    execMock = jest.spyOn(exec, 'exec').mockImplementation()
+    execMock = vi.mocked(exec.exec)
   })
 
   it('executes vstest.console.exe', async () => {

@@ -1,12 +1,13 @@
+import { vi, describe, it, expect, beforeEach, type MockInstance } from 'vitest'
 import { DefaultArtifactClient } from '@actions/artifact'
-import * as sut from '../src/artifact'
-import * as find from '../src/find'
+import * as sut from '../src/artifact.js'
+import * as find from '../src/find.js'
 
-let findMock: jest.SpiedFunction<typeof find.find>
+let findMock: MockInstance<typeof find.find>
 
-jest.mock('@actions/artifact', () => {
+vi.mock('@actions/artifact', () => {
   return {
-    DefaultArtifactClient: jest.fn().mockImplementation(() => {
+    DefaultArtifactClient: vi.fn().mockImplementation(function () {
       return {
         uploadArtifact: (name: string) => {
           switch (name) {
@@ -26,12 +27,16 @@ jest.mock('@actions/artifact', () => {
 })
 
 describe('uploadArtifact()', () => {
-  const MockedArtifactClient = jest.mocked(DefaultArtifactClient)
+  const MockedArtifactClient = vi.mocked(DefaultArtifactClient)
 
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
 
-    findMock = jest.spyOn(find, 'find').mockImplementation()
+    findMock = vi.spyOn(find, 'find').mockImplementation(async () => ({
+      directories: [],
+      files: [],
+      searchPaths: []
+    }))
 
     MockedArtifactClient.mockClear()
   })

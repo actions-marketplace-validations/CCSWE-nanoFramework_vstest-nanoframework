@@ -1,18 +1,21 @@
+import { vi, describe, it, expect, beforeEach, type MockInstance } from 'vitest'
 import * as core from '@actions/core'
-import * as sut from '../src/inputs'
-import { Default, Input } from '../src/inputs'
+import * as sut from '../src/inputs.js'
+import { Default, Input } from '../src/inputs.js'
 
-let getBooleanInputMock: jest.SpiedFunction<typeof core.getBooleanInput>
-let getInputMock: jest.SpiedFunction<typeof core.getInput>
+vi.mock('@actions/core')
+
+let getBooleanInputMock: MockInstance<typeof core.getBooleanInput>
+let getInputMock: MockInstance<typeof core.getInput>
 
 describe('getActionInputs()', () => {
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
 
-    getBooleanInputMock = jest
+    getBooleanInputMock = vi
       .spyOn(core, 'getBooleanInput')
-      .mockImplementation()
-    getInputMock = jest.spyOn(core, 'getInput').mockImplementation()
+      .mockImplementation(() => false)
+    getInputMock = vi.spyOn(core, 'getInput').mockImplementation(() => '')
   })
 
   it('sets correct defaults', () => {
@@ -54,11 +57,11 @@ describe('getActionInputs()', () => {
 
 describe('getBooleanInput()', () => {
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
 
-    getBooleanInputMock = jest
+    getBooleanInputMock = vi
       .spyOn(core, 'getBooleanInput')
-      .mockImplementation()
+      .mockImplementation(() => false)
   })
 
   it('returns correct value', () => {
@@ -84,9 +87,9 @@ describe('getBooleanInput()', () => {
 
 describe('getNumberInput()', () => {
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
 
-    getInputMock = jest.spyOn(core, 'getInput').mockImplementation()
+    getInputMock = vi.spyOn(core, 'getInput').mockImplementation(() => '')
   })
 
   it('returns correct value', () => {
@@ -130,9 +133,9 @@ describe('getNumberInput()', () => {
 
 describe('getStringInput()', () => {
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
 
-    getInputMock = jest.spyOn(core, 'getInput').mockImplementation()
+    getInputMock = vi.spyOn(core, 'getInput').mockImplementation(() => '')
   })
 
   it('returns correct value', () => {

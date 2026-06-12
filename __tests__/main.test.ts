@@ -1,21 +1,24 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
+import { vi, describe, it, expect, beforeEach, type MockInstance } from 'vitest'
 import * as core from '@actions/core'
-import * as artifact from '../src/artifact'
-import * as inputs from '../src/inputs'
-import * as sut from '../src/main'
-import * as vstest from '../src/vstest'
-import { Inputs } from '../src/inputs'
+import * as artifact from '../src/artifact.js'
+import * as inputs from '../src/inputs.js'
+import * as sut from '../src/main.js'
+import * as vstest from '../src/vstest.js'
+import { Inputs } from '../src/inputs.js'
 
-let downloadTestToolsMock: jest.SpiedFunction<typeof vstest.downloadTestTools>
-let getActionInputsMock: jest.SpiedFunction<typeof inputs.getActionInputs>
-let getRunSettingsMock: jest.SpiedFunction<typeof vstest.getRunSettings>
-let getTestAdaptersMock: jest.SpiedFunction<typeof vstest.getTestAdapters>
-let getTestArgumentsMock: jest.SpiedFunction<typeof vstest.getTestArguments>
-let getTestAssembliesMock: jest.SpiedFunction<typeof vstest.getTestAssemblies>
-let setFailedMock: jest.SpiedFunction<typeof core.setFailed>
-let runTestsMock: jest.SpiedFunction<typeof vstest.runTests>
-let uploadArtifactMock: jest.SpiedFunction<typeof artifact.uploadArtifact>
-let warningMock: jest.SpiedFunction<typeof core.warning>
+vi.mock('@actions/core', () => ({
+  debug: vi.fn(),
+  info: vi.fn(),
+  setFailed: vi.fn(),
+  warning: vi.fn()
+}))
+
+let getRunSettingsMock: MockInstance<typeof vstest.getRunSettings>
+let getTestAdaptersMock: MockInstance<typeof vstest.getTestAdapters>
+let getTestAssembliesMock: MockInstance<typeof vstest.getTestAssemblies>
+let setFailedMock: MockInstance<typeof core.setFailed>
+let uploadArtifactMock: MockInstance<typeof artifact.uploadArtifact>
+let warningMock: MockInstance<typeof core.warning>
 
 const inputsMock: Inputs = {
   enableCodeCoverage: false,
@@ -30,37 +33,29 @@ const inputsMock: Inputs = {
 
 describe('run()', () => {
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
 
-    downloadTestToolsMock = jest
-      .spyOn(vstest, 'downloadTestTools')
-      .mockImplementation()
-    getActionInputsMock = jest
-      .spyOn(inputs, 'getActionInputs')
-      .mockImplementation()
-    getRunSettingsMock = jest
+    vi.spyOn(vstest, 'downloadTestTools').mockResolvedValue(
+      'vstest.console.exe'
+    )
+    vi.spyOn(inputs, 'getActionInputs').mockReturnValue(inputsMock)
+    getRunSettingsMock = vi
       .spyOn(vstest, 'getRunSettings')
-      .mockImplementation()
-    getTestAdaptersMock = jest
+      .mockResolvedValue(['runSettings1'])
+    getTestAdaptersMock = vi
       .spyOn(vstest, 'getTestAdapters')
-      .mockImplementation()
-    getTestArgumentsMock = jest
-      .spyOn(vstest, 'getTestArguments')
-      .mockImplementation()
-    getTestAssembliesMock = jest
+      .mockResolvedValue(['testAdapter1'])
+    vi.spyOn(vstest, 'getTestArguments').mockReturnValue('')
+    getTestAssembliesMock = vi
       .spyOn(vstest, 'getTestAssemblies')
-      .mockImplementation()
-    setFailedMock = jest.spyOn(core, 'setFailed').mockImplementation()
-    runTestsMock = jest.spyOn(vstest, 'runTests').mockImplementation()
-    uploadArtifactMock = jest
+      .mockResolvedValue(['assembly1'])
+    vi.spyOn(vstest, 'getVsTestPath').mockResolvedValue('')
+    setFailedMock = vi.spyOn(core, 'setFailed').mockImplementation(() => {})
+    vi.spyOn(vstest, 'runTests').mockResolvedValue(undefined)
+    uploadArtifactMock = vi
       .spyOn(artifact, 'uploadArtifact')
-      .mockImplementation()
-    warningMock = jest.spyOn(core, 'warning').mockImplementation()
-
-    getActionInputsMock.mockReturnValue(inputsMock)
-    getRunSettingsMock.mockReturnValue(Promise.resolve(['runSettings1']))
-    getTestAdaptersMock.mockReturnValue(Promise.resolve(['testAdapter1']))
-    getTestAssembliesMock.mockReturnValue(Promise.resolve(['assembly1']))
+      .mockResolvedValue(undefined)
+    warningMock = vi.spyOn(core, 'warning').mockImplementation(() => {})
   })
 
   it('fails if error uploading results', async () => {
@@ -77,7 +72,7 @@ describe('run()', () => {
   })
 
   it('fails if no no runsettings are found', async () => {
-    getRunSettingsMock.mockReturnValue(Promise.resolve([]))
+    getRunSettingsMock.mockResolvedValue([])
     inputsMock.runSettings = undefined
 
     await sut.run()
@@ -87,7 +82,7 @@ describe('run()', () => {
   })
 
   it('fails if no test adapters are found', async () => {
-    getTestAdaptersMock.mockReturnValue(Promise.resolve([]))
+    getTestAdaptersMock.mockResolvedValue([])
 
     await sut.run()
 
@@ -96,7 +91,7 @@ describe('run()', () => {
   })
 
   it('fails if no test assemblies are found', async () => {
-    getTestAssembliesMock.mockReturnValue(Promise.resolve([]))
+    getTestAssembliesMock.mockResolvedValue([])
 
     await sut.run()
 
@@ -111,9 +106,7 @@ describe('run()', () => {
   })
 
   it('warns if multiple runsettings are found', async () => {
-    getRunSettingsMock.mockReturnValue(
-      Promise.resolve(['runSettings1', 'runSettings2'])
-    )
+    getRunSettingsMock.mockResolvedValue(['runSettings1', 'runSettings2'])
     inputsMock.runSettings = undefined
 
     await sut.run()
@@ -125,9 +118,7 @@ describe('run()', () => {
   })
 
   it('warns if multiple test adapters are found', async () => {
-    getTestAdaptersMock.mockReturnValue(
-      Promise.resolve(['testAdapter1', 'testAdapter2'])
-    )
+    getTestAdaptersMock.mockResolvedValue(['testAdapter1', 'testAdapter2'])
 
     await sut.run()
 

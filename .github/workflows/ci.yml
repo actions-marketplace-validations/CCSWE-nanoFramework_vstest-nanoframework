@@ -19,7 +19,7 @@ jobs:
     steps:
       - name: Checkout
         id: checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Setup Node.js
         id: setup-node
@@ -48,7 +48,6 @@ jobs:
     name: GitHub Actions Test
     runs-on: windows-latest
     env:
-      BUILD_CONFIGURATION: 'Release'
       GITHUB_TOKEN: ${{ github.token }}
       SOLUTION_FOLDER: './solution/'
       SOLUTION: 'VsTestAction.sln'
@@ -56,28 +55,17 @@ jobs:
     steps:
       - name: Checkout
         id: checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
       - name: Setup nanoFramework
-        uses: nanoframework/nanobuild@v1
-
-      - name: Setup MSBuild
-        uses: microsoft/setup-msbuild@v2
-        with:
-          msbuild-architecture: x64
-
-      - name: Setup NuGet
-        uses: nuget/setup-nuget@v2
-
-      - name: Install dependencies
-        run: nuget restore ${{ env.SOLUTION_FOLDER }}${{ env.SOLUTION }}
+        uses: CCSWE-nanoFramework/actions-nanoframework/setup-nanoframework@master
 
       - name: Build solution
-        run:
-          msbuild ${{ env.SOLUTION_FOLDER }}${{ env.SOLUTION }}
-          /p:Configuration=${{ env.BUILD_CONFIGURATION }}
+        uses: CCSWE-nanoFramework/actions-nanoframework/build-nanoframework@master
+        with:
+          solution: ${{ env.SOLUTION_FOLDER }}${{ env.SOLUTION }}
 
       - name: Test Local Action
         id: test-action

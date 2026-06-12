@@ -1,4 +1,3 @@
-import jest from 'eslint-plugin-jest'
 import typescriptEslint from '@typescript-eslint/eslint-plugin'
 import globals from 'globals'
 import tsParser from '@typescript-eslint/parser'
@@ -24,7 +23,9 @@ export default [
       '**/dist/',
       '**/node_modules/',
       '**/*.json',
-      'eslint.config.mjs'
+      'eslint.config.mjs',
+      'babel.config.js',
+      'vitest.config.ts'
     ]
   },
   ...compat.extends(
@@ -32,19 +33,16 @@ export default [
     'plugin:@typescript-eslint/eslint-recommended',
     'plugin:@typescript-eslint/recommended',
     'plugin:github/recommended',
-    'plugin:import/recommended',
-    'plugin:jest/recommended'
+    'plugin:import/recommended'
   ),
   {
     plugins: {
-      jest,
       '@typescript-eslint': typescriptEslint
     },
 
     languageOptions: {
       globals: {
         ...globals.node,
-        ...globals.jest,
         Atomics: 'readonly',
         SharedArrayBuffer: 'readonly'
       },
@@ -64,7 +62,9 @@ export default [
       'eslint-comments/no-unused-disable': 'off',
       'filenames/match-regex': 'off',
       'i18n-text/no-en': 'off',
+      'import/named': 'off',
       'import/no-namespace': 'off',
+      'import/no-unresolved': 'off',
       'no-console': 'off',
       'no-shadow': 'off',
       'no-unused-vars': 'off',
