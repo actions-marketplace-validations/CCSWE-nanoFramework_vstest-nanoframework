@@ -5,6 +5,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import js from '@eslint/js'
 import { FlatCompat } from '@eslint/eslintrc'
+import github from 'eslint-plugin-github'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -18,23 +19,23 @@ export default [
   {
     ignores: [
       '!**/.*',
-      '**/node_modules/.*',
-      '**/dist/.*',
-      '**/coverage/.*',
-      '**/*.json',
-      '**/lib/',
+      '**/.github/',
+      '**/coverage/',
       '**/dist/',
       '**/node_modules/',
-      '**/coverage/'
+      '**/*.json',
+      'eslint.config.mjs',
+      'babel.config.js',
+      'vitest.config.ts'
     ]
   },
   ...compat.extends(
     'eslint:recommended',
     'plugin:@typescript-eslint/eslint-recommended',
-    'plugin:@typescript-eslint/recommended',
-    'plugin:github/recommended',
-    'plugin:import/recommended'
+    'plugin:@typescript-eslint/recommended'
   ),
+  github.getFlatConfigs().recommended,
+  ...compat.extends('plugin:import/recommended'),
   {
     plugins: {
       '@typescript-eslint': typescriptEslint
